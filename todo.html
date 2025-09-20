@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center mb-4">Todo App</h1>
+    <div class="flex mb-4">
+      <input
+        type="text"
+        id="todoInput"
+        placeholder="Add a new task"
+        class="flex-1 p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+      <button
+        onclick="addTodo()"
+        class="bg-blue-500 text-white p-2 rounded-r-lg hover:bg-blue-600"
+      >
+        Add
+      </button>
+    </div>
+    <ul id="todoList" class="space-y-2"></ul>
+  </div>
+
+  <script>
+    // Load todos from localStorage on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTodos();
+    });
+
+    function addTodo() {
+      const todoInput = document.getElementById('todoInput');
+      const todoText = todoInput.value.trim();
+      if (todoText === '') {
+        alert('Please enter a task!');
+        return;
+      }
+
+      const todo = {
+        id: Date.now(),
+        text: todoText,
+        completed: false
+      };
+
+      // Save to localStorage
+      const todos = getTodos();
+      todos.push(todo);
+      localStorage.setItem('todos', JSON.stringify(todos));
+
+      // Clear input and refresh list
+      todoInput.value = '';
+      loadTodos();
+    }
+
+    function loadTodos() {
+      const todoList = document.getElementById('todoList');
+      todoList.innerHTML = ''; // Clear current list
+      const todos = getTodos();
+
+      todos.forEach(todo => {
+        const li = document.createElement('li');
+        li.className = `flex justify-between items-center p-2 border-b ${todo.completed ? 'bg-gray-200' : ''}`;
+        li.innerHTML = `
+          <span class="${todo.completed ? 'line-through text-gray-500' : ''}">${todo.text}</span>
+          <div>
+            <button
+              onclick="toggleTodo(${todo.id})"
+              class="text-green-500 hover:text-green-700 mr-2"
+            >
+              ${todo.completed ? 'Undo' : 'Complete'}
+            </button>
+            <button
+              onclick="deleteTodo(${todo.id})"
+              class="text-red-500 hover:text-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        `;
+        todoList.appendChild(li);
+      });
+    }
+
+    function getTodos() {
+      return JSON.parse(localStorage.getItem('todos') || '[]');
+    }
+
+    function toggleTodo(id) {
+      const todos = getTodos();
+      const updatedTodos = todos.map(todo =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      );
+      localStorage.setItem('todos', JSON.stringify(updatedTodos));
+      loadTodos();
+    }
+
+    function deleteTodo(id) {
+      const todos = getTodos();
+      const updatedTodos = todos.filter(todo => todo.id !== id);
+      localStorage.setItem('todos', JSON.stringify(updatedTodos));
+      loadTodos();
+    }
+  </script>
+</body>
+</html>
